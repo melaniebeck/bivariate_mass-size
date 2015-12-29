@@ -65,7 +65,7 @@ def calc_prob(P, ha_sig, o3_sig, entry):
         #print "size (kpc):", entry['PETROR50_R_KPC']
 
         num = fns.bivar(entry['PETROR50_R_KPC_LOG'], entry['MODE'], P)
-
+        #print num
         try: prob = math.log(num) #- math.log(den)
         except: 
                 print num

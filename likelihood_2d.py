@@ -14,7 +14,6 @@ def likelihood(P, data, ha_sig, o3_sig, log=None):
     the 2D case. Multiprocesses the data set to calculate
     the numerator and denominator for the probability term.
     """
-
     #'''
     P = tuple(P)
     now1 = time.time()
@@ -83,8 +82,7 @@ def minimize(data, ha_sig, o3_sig, x0, bounds, log=None):
     Returns the value for P where the likelihood function
     is maximized (minimizes negative likelihood function)
     """
-    # data --> record array?  
-   
+
     if log != None:
         with open(log,'w') as f: f.write('# Log file for maximization of log-likelihood function for 2-D case \n \n')
 

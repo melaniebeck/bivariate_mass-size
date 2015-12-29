@@ -1,49 +1,30 @@
+import pdb
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
-from matplotlib.colors import LogNorm
-import numpy.random as rand
-import scipy.optimize as opt
+from scipy.stats import kde
 from astropy.table import Table
-import pdb
-from cosmolopy.luminosityfunction import schechterL
 import likelihood_2d as ll2d
-import probability_2d as prob2d
 import functions as fns
-import scipy.stats
-import scipy.integrate
-import shen
 
-
-plt.rc('font', **{'size':16.,'weight':400})
+plt.rc('font', **{'size':18.,'weight':400})
 plt.rc('axes', **{'linewidth': 2.0})
 plt.rc('xtick', **{'major.width': 1.2})
 plt.rc('ytick', **{'major.width': 1.2})
 
-def schechter(mass, alpha, Mstar):
-    x = np.power(10., mass-Mstar)
-    return  np.log(10.)*np.power(x,alpha+1)*np.exp(-x)
 
-def lognormal(mass, size, sigma_R, R_0, beta):
-    R_bar = peak_of_size_dist(mass, R_0, beta)
-    logfunc = (np.log10(size/R_bar)/sigma_R)**2
-    return 1/(size*sigma_R*np.sqrt(2*np.pi)) * np.exp(-0.5*logfunc)
+def get_disks(data):
+    featured = np.where(
+        (data['t01_smooth_or_features_a02_features_or_disk_debiased']
+         >=0.430) &
+        (data['t01_smooth_or_features_a02_features_or_disk_count']>=10) )
+        #(data['t02_edgeon_a05_no_debiased']>=0.715) &
+    return featured
 
-def peak_of_size_dist(mass, R_0, beta, M_0=10.6):
-    return R_0*(M/M_0)**beta
-
-def calculate_R_bar(mass, R_0, beta, M_0=10.6):
-    return np.log10(R_0) + beta*(mass - M_0) 
-
-def bivariate_mass_size(mass, size, alpha, Mstar, beta, R_0, sigma_lnR):
-    a = np.power(10., mass-Mstar)
-    b = np.log(10)/(sigma*np.sqrt(2*np.pi))
-
-    R_bar = calculate_R_bar(mass, M_0, R_0, beta)
-
-    c = (size-R_bar)**2/(2*(sigma_lnR/np.log(10))**2)
-
-    return np.log(10)*np.power(x,alpha+1)*np.exp(-x)*b*np.exp(-c)
+def get_ellipticals(data):
+    ellipts = np.where(
+        (data['t01_smooth_or_features_a01_smooth_count']>=10) &
+        (data['t01_smooth_or_features_a01_smooth_debiased']>=0.463) )
+    return ellipts
 
 def plot_2dbivar_check(data, coeff, name=None):
     # coeff is a list which contains all the necessary parameters to describe 
@@ -80,7 +61,7 @@ def plot_2dbivar_check(data, coeff, name=None):
     ax1.set_ylabel('Mass [log(M / M_sun)]')
     ax1.set_title('Stuff')
 
-    k = scipy.stats.gaussian_kde(values)
+    k = kde.gaussian_kde(values)
     xi, yi = np.mgrid[rlims[0]:rlims[1]:50j, mlims[0]:mlims[1]:80j]
     zpos = np.vstack([xi.flatten(), yi.flatten()])
     norm = len(data)/k.integrate_box([rlims[0],mlims[0]],[rlims[1],mlims[1]])
@@ -145,7 +126,7 @@ def plot_2dbivar_compare(data, coeff, text, title=None, name=None):
         
         # KDE OF THE DATA
         values = np.vstack([d['PETROR50_R_KPC_LOG'], d['MODE']])
-        k = scipy.stats.gaussian_kde(values)
+        k = kde.gaussian_kde(values)
         norm = len(d)/k.integrate_box([rlims[0],mlims[0]],[rlims[1],mlims[1]])
         zi_data = np.log10(norm*k(pos)/fns.veff(.005,0.1,fns.get_sangle()))
 
@@ -196,78 +177,31 @@ def plot_2dbivar_compare(data, coeff, text, title=None, name=None):
     plt.show()
     pdb.set_trace()
 
+
 def minimize_plot2d(data, x0, bounds, name=None):
-    print name
     coeff = ll2d.minimize(data, 0., 0., x0, bounds, log=name)
     plot_2dbivar_check(data, coeff, name=name)
 
 
+data = Table.read('zoo2MainSpecz_Ancillary_Masses_cut2.fits')
+data['PETROR50_R_KPC_LOG'] = np.log10(data['PETROR50_R_KPC'])
 
-def main():
-    
-    # Huang et al. 2013:
-    # P = [alpha, Mstar, R_0, sigma_R, beta] = [-1.7, -21., 0.21", 0.7, 0.3]
-    
-    #print "size limits:", np.log10(np.min(data['PETROR50_R_KPC'])), \
-        #    np.log10(np.max(data['PETROR50_R']))
-    #print "mass limits:", np.min(data['MODE']), np.max(data['MODE'])
-    
-    
-    pdb.set_trace()
-    data = Table.read('zoo2MainSpecz_Ancillary_Masses_cut2.fits')
-    
-    """
-    # Split by concentration index (CI = 2.86)
-    CI = data['PETROR90_R']/data['PETROR50_R']
-    early1 = np.where(CI > 2.86)
-    late1 = np.where(CI < 2.86)
-    
-    early2 = np.where(CI > 2.6)
-    late2 = np.where(CI < 2.6)
-    """
-    
-    #"""
-    # Split by u-r color  ( u-r = 2.2)
-    ur = data['PETROMAG_U']-data['PETROMAG_R']
-    early = np.where(ur < 2.2)
-    late = np.where(ur > 2.2)
-    #"""
-    
-    
-    """
-    # Split by g-r color (g-r = 0.7)
-    gr = data['PETROMAG_G']-data['PETROMAG_R']
-    early = np.where(gr < 0.7)
-    late = np.where(gr > 0.7)
-    """
-    
-    """
-    # Split by GZ2 visual morphology
-    feat = shen.get_disks(data)
-    smooth = shen.get_ellipticals(data)
-    """
-    
-    
-    data['PETROR50_R_KPC_LOG'] = np.log10(data['PETROR50_R_KPC'])
-    
-    # initial parameters (schechter, lognormal)
-    # P = (alpha, M_0, beta, R_0, sig) 
-    x0 = (-1.5, 10.6, .25, 2., .9)
-    bounds_e = [(-2., -0.1),(10.3, 11.5),(.1, 1.0),(.1, 3.),(.2, 3.)]
-    bounds_l = [(-2., -0.1),(10.3, 11.5),(.1, 1.0),(.1, 5.),(.2, 3.)] 
-    
-    name = 'ur_early'
-    pdb.set_trace()
-    minimize_plot2d(data[early], x0, bounds_e, name=name)
-    minimize_plot2d(data[late], x0, bounds_l, name='ur_late')
-    
-    pdb.set_trace()
-    
-    #plot_2dbivar_compare([data[late2], data[early2]], [Pl, Pe], 
-    #                     ['CI < 2.6', 'CI > 2.6'], name='CI_2.6')
+#"""
+# Split by u-r color  ( u-r = 2.2)
+ur = data['PETROMAG_U']-data['PETROMAG_R']
+early = np.where(ur < 2.2)
+late = np.where(ur > 2.2)
+#"""
 
 
-if __name__ == '__main__':
-    main()
+# initial parameters (schechter, lognormal)
+# P = (alpha, M_0, beta, R_0, sig) 
+x0 = (-1.5, 10.6, .25, 2., .9)
+bounds_e = [(-2., -0.1),(10.3, 11.5),(.01, 1.0),(.1, 4.),(.2, 3.)]
+bounds_l = [(-2., -0.1),(10.3, 11.5),(.1, 1.0),(.1, 5.),(.2, 3.)] 
 
+name = 'ur_early2'
+minimize_plot2d(data[early], x0, bounds_e, name=name)
+minimize_plot2d(data[late], x0, bounds_l, name='ur_late')
 
+pdb.set_trace()

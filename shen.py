@@ -385,16 +385,18 @@ def plot_GAMAfig2(data):
     conc = data['PETROR90_R']/data['PETROR50_R']
 
 
-    fig = plt.figure(figsize=(8, 15))
-     
+    fig = plt.figure(figsize=(10, 15))
+
+    levels = [.1, .32, .5, .75, .90]
+
     # ----------- Stellar Mass vs Concentration; Color = ur ---------------
     ax1 = fig.add_subplot(311)
     ax1.set_xlim(1.,5.)
     ax1.set_ylim(10.,12.)
     ax1.set_xlabel('CI')
     ax1.set_ylabel('log[Stellar Mass]')
-    xi, yi = np.mgrid[np.min(conc):np.max(conc):30j, 
-                      np.min(mass):np.max(mass):40j]
+    xi, yi = np.mgrid[np.min(conc):np.max(conc):80j, 
+                      np.min(mass):np.max(mass):80j]
     k1 = kde.gaussian_kde(np.vstack([conc, mass]))
     z1 = k1(np.vstack([xi.flatten(), yi.flatten()])).reshape(xi.shape)
     
@@ -403,7 +405,8 @@ def plot_GAMAfig2(data):
     scatter = ax1.scatter(conc[good], mass[good], c=color[good], marker='.', 
                           edgecolor='')
     #img = ax4.pcolormesh(xi, yi, z4, cmap=plt.cm.Blues)
-    ax1.contour(xi.T, yi.T, z1.T, 10, cmap = plt.cm.bone, lw=2)
+    ax1.contour(xi.T, yi.T, z1.T, levels, colors='k', linewidths=1.3)
+    ax1.axvline(x=2.65, color='k', lw=2, ls='--')
 
     ticks = np.arange(0.1, 4.1, .5)/np.max(ur)
     labels = [format(t*np.max(ur), '.1f') for t in ticks]
@@ -415,11 +418,11 @@ def plot_GAMAfig2(data):
     # ---------------- ur vs Stellar Mass; color = conc -----------------
     ax2 = fig.add_subplot(312)
     ax2.set_xlim(10.,12.)
-    ax2.set_ylim(0.,5.)
+    ax2.set_ylim(0.,4.5)
     ax2.set_xlabel('log[Stellar Mass]')
     ax2.set_ylabel('u - r')
-    xi, yi = np.mgrid[np.min(mass):np.max(mass):30j, 
-                      np.min(ur):np.max(ur):40j]
+
+    xi, yi = np.mgrid[10.:12.5:60j,0.:5.:60j]
     k2 = kde.gaussian_kde(np.vstack([mass, ur]))
     z2 = k2(np.vstack([xi.flatten(), yi.flatten()])).reshape(xi.shape)
     
@@ -427,8 +430,8 @@ def plot_GAMAfig2(data):
     good = np.where(color < .35)
     scatter = ax2.scatter(mass[good], ur[good], c=color[good], marker='.', 
                           edgecolor='')
-    ax2.contour(xi.T, yi.T, z2.T, 10, cmap = plt.cm.bone, lw=2)
-    ax2.axhline(y=2.2, color='k')
+    ax2.contour(xi.T, yi.T, z2.T, levels, colors='k', linewidths=1.3)
+    ax2.axhline(y=2.2, color='k', ls='--', lw=2)
 
     ticks = np.arange(1., 4.,.5)/np.max(conc)
     labels = [format(t*np.max(conc), '.1f') for t in ticks]
@@ -439,11 +442,11 @@ def plot_GAMAfig2(data):
     #----------------- gi vs Stellar Mass; color = conc ------------------
     ax3 = fig.add_subplot(313)
     ax3.set_xlim(10.,12.)
-    ax3.set_ylim(0.,2.)
+    ax3.set_ylim(0.,1.5)
     ax3.set_xlabel('log[Stellar Mass]')
-    ax3.set_ylabel('g - i')
-    xi, yi = np.mgrid[np.min(mass):np.max(mass):30j, 
-                      np.min(gi):np.max(gi):40j]
+    ax3.set_ylabel('g - r')
+
+    xi, yi = np.mgrid[10.:12.5:60j, 0.:1.5:60j]
     k3 = kde.gaussian_kde(np.vstack([mass, gi]))
     z3 = k3(np.vstack([xi.flatten(), yi.flatten()])).reshape(xi.shape)
     
@@ -451,8 +454,8 @@ def plot_GAMAfig2(data):
     good = np.where(color < .35)
     scatter = ax3.scatter(mass[good], gi[good], c=color[good], marker='.', 
                           edgecolor='')
-    ax3.contour(xi.T, yi.T, z3.T, 10, cmap = plt.cm.bone, lw=2)
-    ax3.axhline(y=.7, color='k')
+    ax3.contour(xi.T, yi.T, z3.T, levels, colors='k', linewidths=1.3)
+    ax3.axhline(y=.7, color='k', ls='--', lw=2)
 
     ticks = np.arange(1., 4.,.5)/np.max(conc)
     labels = [format(t*np.max(conc), '.1f') for t in ticks]
@@ -504,41 +507,51 @@ def plot_stuff_GZclasses(data):
     feat = get_disks(data)
     ells = get_ellipticals(data)
 
-    combo = np.sort(np.concatenate([feat[0],ells[0]]))
-    color = np.array(['b' if x in feat[0] else 'r' for x in combo])
-    data = data[combo]
+    #combo = np.sort(np.concatenate([feat[0],ells[0]]))
+    #color = np.array(['b' if x in feat[0] else 'r' for x in combo])
+    #data = data[combo]
 
-    import numpy.random as rand
-    random_sample = rand.random_integers(0,len(data)-1, .5*len(data))
+    #import numpy.random as rand
+    #random_sample = rand.random_integers(0,len(data)-1, .5*len(data))
     
     ur = data['PETROMAG_U']-data['PETROMAG_R']
     gi = data['PETROMAG_G']-data['PETROMAG_R']
     conc = data['PETROR90_R']/data['PETROR50_R']
     mass = data['MODE']
 
+    levels = [ .5, .75, .99]
 
     fig = plt.figure(figsize=(8,15))
-    
+
     ax1 = fig.add_subplot(311)
-    ax1.set_xlim(1.,5.)
-    ax1.set_ylim(10.,12.5)
+    ax1.set_xlim(1.,4.5)
+    ax1.set_ylim(10.,12.)
     ax1.set_xlabel('CI')
     ax1.set_ylabel('log[Stellar Mass]')
+
     xi, yi = np.mgrid[np.min(conc):np.max(conc):80j,
                       np.min(mass):np.max(mass):80j]
-    k1 = kde.gaussian_kde(np.vstack([conc, mass]), bw_method='scott')
-    z1 = np.reshape(k1(np.vstack([xi.flatten(), yi.flatten()])), xi.shape) 
+    k1tot = kde.gaussian_kde(np.vstack([conc, mass]), bw_method='scott')
+    k1f = kde.gaussian_kde(np.vstack([conc[feat], mass[feat]]), 
+                           bw_method='scott')
+    k1e = kde.gaussian_kde(np.vstack([conc[ells], mass[ells]]), 
+                           bw_method='scott')
+    z1tot = np.reshape(k1tot(np.vstack([xi.flatten(), yi.flatten()])), xi.shape)
+    z1f = np.reshape(k1f(np.vstack([xi.flatten(), yi.flatten()])), xi.shape) 
+    z1e = np.reshape(k1e(np.vstack([xi.flatten(), yi.flatten()])), xi.shape) 
 
-    img = ax1.pcolormesh(xi, yi, z1, cmap=plt.cm.bone_r)
+    img = ax1.pcolormesh(xi, yi, z1tot, cmap=plt.cm.bone_r)
     plt.axes([1.,5., 10.,12.])
-    levels = [.1, .32, .5, .75, .90]
-    ax1.contour(xi.T, yi.T, z1.T, levels=levels, colors=('k',), 
-                linewidths=(1.3,))
-    scatter = ax1.scatter(conc[random_sample], mass[random_sample], 
-                          c=color[random_sample], marker='.',
-                          edgecolor='', alpha=0.5)
+    ax1.contour(xi.T, yi.T, z1f.T, levels=levels, colors='b', linewidths=1.3)
+    ax1.contour(xi.T, yi.T, z1e.T, levels=levels, colors='r', linewidths=1.3)
+    #scatter = ax1.scatter(conc[random_sample], mass[random_sample], 
+    #                      c=color[random_sample], marker='.',
+    #                      edgecolor='', alpha=0.5)
     ax1.axvline(x=2.65, color='k', lw=2, ls='--')
 
+
+    ax1.text(1.1, 11.7, 'Smooth', color='red', size=16) 
+    ax1.text(1.1, 11.5, 'Featured', color='blue', size=16)
     #red = mpatches.Patch(color='red', label='Smooth')
     #blue = mpatches.Patch(color='blue', label='Featured')
     #plt.legend(handles=[red, blue])
@@ -546,44 +559,53 @@ def plot_stuff_GZclasses(data):
     #"""
     # ---------------- ur vs Stellar Mass; color = conc -----------------
     ax2 = fig.add_subplot(312)
-    ax2.set_xlim(10., 12.5)
+    ax2.set_xlim(10., 12.)
     ax2.set_ylim(0.,4.5)
     ax2.set_xlabel('log[Stellar Mass]')
     ax2.set_ylabel('u - r')
-    xi, yi = np.mgrid[10.:12.5:60j,0.:5.:60j]
-    k2 = kde.gaussian_kde(np.vstack([mass, ur]))
-    z2 = k2(np.vstack([xi.flatten(), yi.flatten()])).reshape(xi.shape)
 
-    img = ax2.pcolormesh(xi, yi, z2, cmap=plt.cm.bone_r)
-    ax2.contour(xi.T, yi.T, z2.T, levels=levels, colors=('k',), 
-                linewidths=(1.3,))
-    scatter = ax2.scatter(mass[random_sample], ur[random_sample], 
-                          c=color[random_sample], marker='.', edgecolor='')
-    levels = [.1, .32, .5, .75, .90]
+    xi, yi = np.mgrid[10.:12.5:60j,0.:5.:60j]
+    k2tot = kde.gaussian_kde(np.vstack([mass, ur]))
+    k2f = kde.gaussian_kde(np.vstack([mass[feat], ur[feat]]))
+    k2e = kde.gaussian_kde(np.vstack([mass[ells], ur[ells]]))
+    z2tot = k2tot(np.vstack([xi.flatten(), yi.flatten()])).reshape(xi.shape)
+    z2f = k2f(np.vstack([xi.flatten(), yi.flatten()])).reshape(xi.shape)
+    z2e = k2e(np.vstack([xi.flatten(), yi.flatten()])).reshape(xi.shape)
+
+    img = ax2.pcolormesh(xi, yi, z2tot, cmap=plt.cm.bone_r)
+    ax2.contour(xi.T, yi.T, z2f.T, levels=levels, colors='b', linewidths=1.3)
+    ax2.contour(xi.T, yi.T, z2e.T, levels=levels, colors='r', linewidths=1.3)
+    #scatter = ax2.scatter(mass[random_sample], ur[random_sample], 
+    #                      c=color[random_sample], marker='.', edgecolor='')
     ax2.axhline(y=2.2, color='k', lw=2, ls='--')
 
 
     #----------------- gi vs Stellar Mass; color = conc ------------------
     ax3 = fig.add_subplot(313)
-    ax3.set_xlim(10.,12.5)
+    ax3.set_xlim(10.,12.)
     ax3.set_ylim(0.,1.5)
     ax3.set_xlabel('log[Stellar Mass]')
-    ax3.set_ylabel('g - i')
-    xi, yi = np.mgrid[10.:12.5:60j, 0.:1.5:60j]
-    k3 = kde.gaussian_kde(np.vstack([mass, gi]))
-    z3 = k3(np.vstack([xi.flatten(), yi.flatten()])).reshape(xi.shape)
+    ax3.set_ylabel('g - r')
 
-    img = ax3.pcolormesh(xi, yi, z3, cmap=plt.cm.bone_r)
-    ax3.contour(xi.T, yi.T, z3.T, levels=levels, colors=('k',), 
-                linewidths=(1.3,))
-    scatter = ax3.scatter(mass[random_sample], gi[random_sample], 
-                          c=color[random_sample], marker='.', edgecolor='')
+    xi, yi = np.mgrid[10.:12.5:60j, 0.:1.5:60j]
+    k3tot = kde.gaussian_kde(np.vstack([mass, gi])) 
+    k3f = kde.gaussian_kde(np.vstack([mass[feat], gi[feat]]))
+    k3e = kde.gaussian_kde(np.vstack([mass[ells], gi[ells]]))
+    z3tot = k3tot(np.vstack([xi.flatten(), yi.flatten()])).reshape(xi.shape)
+    z3f = k3f(np.vstack([xi.flatten(), yi.flatten()])).reshape(xi.shape)
+    z3e = k3e(np.vstack([xi.flatten(), yi.flatten()])).reshape(xi.shape)
+
+    img = ax3.pcolormesh(xi, yi, z3tot, cmap=plt.cm.bone_r)
+    ax3.contour(xi.T, yi.T, z3f.T, levels=levels, colors='b', linewidths=1.3)
+    ax3.contour(xi.T, yi.T, z3e.T, levels=levels, colors='r', linewidths=1.3)
+    #scatter = ax3.scatter(mass[random_sample], gi[random_sample], 
+    #                      c=color[random_sample], marker='.', edgecolor='')
     ax3.axhline(y=.7, color='k', lw=2, ls='--')
     
     plt.tight_layout()
-    plt.savefig('visual_morph.png')
+    plt.savefig('visual_morph_contours.png')
     plt.show()
-    pdb.set_trace()
+    plt.close()
     #"""  
 
 # ======================================================================= #
@@ -594,22 +616,35 @@ data = Table.read('zoo2MainSpecz_Ancillary_Masses_cut2.fits')
 #data_cuts = apply_cuts(data)
 
 # Data from above after cuts made and matched to my morphologies
-#data_morph = Table.read('zoo2MainSpecz_Ancillary_Masses_cut2_morph.fits')
+data_morph = Table.read('zoo2MainSpecz_Ancillary_Masses_cut2_morph.fits')
 
 plot_stuff_GZclasses(data)
-pdb.set_trace()
-
-plot_GAMAfig2(data)
-plot_GAMAfig4(data)
+#plot_GAMAfig2(data)
+#plot_GAMAfig4(data)
 
 pdb.set_trace()
 
-full_c = data['PETROR90_R']/data['PETROR50_R']
-work_c = data_cuts['PETROR90_R']/data_cuts['PETROR50_R']
+#full_c = data['PETROR90_R']/data['PETROR50_R']
+work_c = data_morph['PETROR90_R']/data_morph['PETROR50_R']
 my_c_elipt = data_morph['r80']/data_morph['r20']
 my_c_circ = data_morph['r80_c']/data_morph['r20_c']
 
+
 fig = plt.figure(figsize=(10,10))
+
+ax1 = fig.add_subplot(111)
+H, x_, y_ = np.histogram2d(work_c, my_c_circ, range=[[0.,10.],[0.,10.]], bins=100)
+ax1.imshow(H.T, origin='lower', interpolation='none', extent=[0., 10., 0., 10.])
+
+#ax1.scatter(work_c, my_c_circ, edgecolor='', alpha=0.5)
+ax1.set_xlabel('R90/R50')
+ax1.set_ylabel('R80/R20')
+#ax1.plot([0,8],[0,8])
+#ax1.set_xlim(0,5)
+#ax1.set_ylim(0,10)
+plt.show()
+
+
 ax1 = fig.add_subplot(111)
 ax1.hist(full_c, bins=100, color='y', range=(1., 7.), alpha=.6,
          label='Full Sample / SDSS CI (R90/R50)')
