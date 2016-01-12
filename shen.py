@@ -3,8 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.colors import LogNorm
-import cosmolopy.distance as cd
-import cosmolopy.magnitudes as cm
+#import cosmolopy.distance as cd
+#import cosmolopy.magnitudes as cm
 import pdb
 from scipy.stats import kde
 import calc_kcor as KC
@@ -14,10 +14,11 @@ As an excersize I'm following along with Shen's paper and plotting what he
 plots so that I have a generic understanding of the task ahead of me. 
 '''
 
-plt.rc('font', **{'size':18.,'weight':400})
-plt.rc('axes', **{'linewidth': 2.0})
-plt.rc('xtick', **{'major.width': 1.2})
-plt.rc('ytick', **{'major.width': 1.2})
+plt.rc('font', **{'size':24.,'weight':535})
+plt.rc('axes', **{'linewidth': 3.75})
+plt.rc('lines', **{'linewidth':3.})
+plt.rc('xtick', **{'major.width':2.5})
+plt.rc('ytick', **{'major.width': 2.5})
 
 def density(x, y, limits, numbins):
 
@@ -157,46 +158,47 @@ def basic_properties(data, filename=None):
     fig = plt.figure(figsize=(10,10))
 
     ax1 = fig.add_subplot(221)
-    ax1.hist(data['PETROR50_R'], normed=True, histtype='step', lw=2, color='k',
-             bins=gen_bins(data['PETROR50_R'],.5))
-    ax1.axvline(x=1.5, color='r', ls='--', lw=2)
-    ax1.set_xlabel(r'$R_{50,r}$')
+    ax1.hist(data['PETROR50_R'], normed=True, histtype='step', lw=2.5, 
+             color='b', bins=gen_bins(data['PETROR50_R'],.5))
+    ax1.axvline(x=1.5, color='r', ls='--', lw=2.5)
+    ax1.set_xlabel(r'R$_{50,r}$ [arcsec]')
     ax1.set_xlim(0,12)
     
     ax2 = fig.add_subplot(222)
-    ax2.hist(data['PETROMAG_R'], normed=True, histtype='step', lw=2, color='k',
-             bins=gen_bins(data['PETROMAG_R'], .1))
-    ax2.axvline(x=17.2, color='r', ls='--', lw=2)
-    ax2.axvline(x=15., color='r', ls='--', lw=2)
-    ax2.set_xlabel('r [mag]')
+    ax2.hist(data['PETROMAG_R'], normed=True, histtype='step', lw=2.5, 
+             color='b', bins=gen_bins(data['PETROMAG_R'], .1))
+    ax2.axvline(x=17.2, color='r', ls='--', lw=2.5)
+    ax2.axvline(x=15., color='r', ls='--', lw=2.5)
+    ax2.set_xlabel('m$_r$ [mag]')
     ax2.set_xlim(13,19)
     
     ax3 = fig.add_subplot(223)
     ax3.hist(data['MU50_R'], normed=True, bins=gen_bins(data['MU50_R'], .1),
-             histtype='step', lw=2, color='k')
-    ax3.axvline(x=23.0, color='r', ls='--', lw=2)
-    ax3.set_xlabel(r'$\mu_{50,r}$')
+             histtype='step', lw=2.5, color='b')
+    ax3.axvline(x=23.0, color='r', ls='--', lw=2.5)
+    ax3.set_xlabel(r'$\mu_{50,r}$ [mag/arcsec$^{2}$]')
     
     ax4 = fig.add_subplot(224)
-    ax4.hist(data['REDSHIFT'], normed=True, histtype='step', lw=2, color='k',
+    ax4.hist(data['REDSHIFT'], normed=True, histtype='step', lw=2.5, color='b',
              bins=gen_bins(data['REDSHIFT'], .005))
-    ax4.axvline(x=0.1, color='r', ls='--', lw=2)
-    ax4.axvline(x=0.02, color='r', ls='--', lw=2)
+    ax4.axvline(x=0.1, color='r', ls='--', lw=2.5)
+    ax4.axvline(x=0.02, color='r', ls='--', lw=2.5)
+    xloc = plt.MaxNLocator(6)
+    ax4.xaxis.set_major_locator(xloc)
     ax4.set_xlabel('z')
     
     plt.tight_layout()
     plt.savefig('basic_properties_%s.png'%filename)
+    plt.show()
     plt.close()
 
 def mass_mag_redshift(data, filename=None):
+    data = data[data['MODE']>0] # remove the -1's
+
     rz_color = data['PETROMAG_G']-data['PETROMAG_Z']
     gi_color = data['PETROMAG_G']-data['PETROMAG_I']
 
     colors = data['MODE']/13.
-    #plt.hist(colors)
-    #plt.show()
-    #plt.close()
-
 
     # ----------------- MASS & MAGNITUDE VS REDSHIFT -------------------------
     fig = plt.figure(figsize=(10,10))
@@ -204,10 +206,10 @@ def mass_mag_redshift(data, filename=None):
     ax1 = fig.add_subplot(211)
     plt1 = ax1.scatter(data['REDSHIFT'], data['PETROMAG_R'], 
                        marker='.', c=colors, edgecolor='')
-    #ax1.axhline(y=17., color='k', ls='--')
-    ax1.axhline(y=17.2, color='k', ls='-.')
-    ax1.axvline(x=0.1, color='k', ls='--')
-    ax1.axvline(x=0.02, color='k', ls='--')
+    #ax1.hline(y=17., color='k', ls='--')
+    ax1.hlines(y=17.2, xmin=0.02, xmax=0.1, color='k', linestyle='--', lw=2.5)
+    ax1.vlines(x=0.1, ymin=10., ymax=17.2, color='k', linestyle='--', lw=2.5)
+    ax1.vlines(x=0.02, ymin=10., ymax=17.2, color='k', linestyle='--', lw=2.5)
     ax1.set_xlim(-0.01, .26)
     ax1.set_ylim(10, 18)
     ax1.set_xlabel('z')
@@ -217,9 +219,8 @@ def mass_mag_redshift(data, filename=None):
     #print ticks
     labels = [format(t*13., '.1f') for t in ticks]
     cbax = fig.colorbar(plt1, ticks=ticks)
-    cbax.ax.set_ylabel('log($M_{sun}$)')
+    cbax.ax.set_ylabel('log M [M/M$_{sun}$]')
     cbax.ax.set_yticklabels(labels)
-    
     
     ax2 = fig.add_subplot(212)
     okay = np.where( (gi_color > 0.) & (gi_color < 2.) )
@@ -228,12 +229,12 @@ def mass_mag_redshift(data, filename=None):
     
     plt2 = ax2.scatter(data['MODE'][okay], data['REDSHIFT'][okay], marker='.', 
                        c=colors, edgecolor='')
-    ax2.axhline(y=0.1, color='k', ls='--')
-    ax2.axhline(y=0.02, color='k', ls='--')
-    ax2.axvline(x=10., color='k', ls='--')
+    ax2.hlines(y=0.1, xmin=10., xmax=12.5, color='k', linestyle='--', lw=2.5)
+    ax2.hlines(y=0.02, xmin=10., xmax=12.5, color='k', linestyle='--', lw=2.5)
+    ax2.vlines(x=10., ymin=0.02, ymax=0.1, color='k', linestyle='--', lw=2.5)
     ax2.set_xlim(6, 12.5)
     ax2.set_ylim(-0.01, .26)
-    ax2.set_xlabel('Stellar Mass, log $M_*$')
+    ax2.set_xlabel('log M [M/M$_{sun}$]')
     ax2.set_ylabel('z')
     
     ticks = np.arange(0., 2.,.5)/2.
@@ -249,7 +250,7 @@ def mass_mag_redshift(data, filename=None):
 
 def plot_size_mass(data, filename):
 
-    fig = plt.figure(figsize=(8,8))
+    fig = plt.figure(figsize=(10,10))
     ax1 = fig.add_subplot(111)
     ax1.scatter(np.log10(data['PETROR50_R_KPC']), data['MODE'], marker='.', edgecolor='')
     #ax1.set_yscale('log')
@@ -381,20 +382,20 @@ def plot_UGRcolors(data, data5):
 def plot_GAMAfig2(data):
     mass = data['MODE']
     ur = data['PETROMAG_U']-data['PETROMAG_R']
-    gi = data['PETROMAG_G']-data['PETROMAG_R']
+    gi = data['PETROMAG_G']-data['PETROMAG_I']
     conc = data['PETROR90_R']/data['PETROR50_R']
 
 
-    fig = plt.figure(figsize=(10, 15))
+    fig = plt.figure(figsize=(8.5, 15))
 
     levels = [.1, .32, .5, .75, .90]
 
     # ----------- Stellar Mass vs Concentration; Color = ur ---------------
     ax1 = fig.add_subplot(311)
-    ax1.set_xlim(1.,5.)
+    ax1.set_xlim(1.,4.5)
     ax1.set_ylim(10.,12.)
-    ax1.set_xlabel('CI')
-    ax1.set_ylabel('log[Stellar Mass]')
+    ax1.set_xlabel('CI', weight=525)
+    ax1.set_ylabel('log[Stellar Mass]', weight=525)
     xi, yi = np.mgrid[np.min(conc):np.max(conc):80j, 
                       np.min(mass):np.max(mass):80j]
     k1 = kde.gaussian_kde(np.vstack([conc, mass]))
@@ -406,19 +407,19 @@ def plot_GAMAfig2(data):
                           edgecolor='')
     #img = ax4.pcolormesh(xi, yi, z4, cmap=plt.cm.Blues)
     ax1.contour(xi.T, yi.T, z1.T, levels, colors='k', linewidths=1.3)
-    ax1.axvline(x=2.65, color='k', lw=2, ls='--')
+    ax1.axvline(x=2.65, color='k', ls='--')
 
     ticks = np.arange(0.1, 4.1, .5)/np.max(ur)
     labels = [format(t*np.max(ur), '.1f') for t in ticks]
     cbax = fig.colorbar(scatter, ticks=ticks)
-    cbax.ax.set_ylabel('u - r')
+    cbax.ax.set_ylabel('u - r', weight=525)
     cbax.ax.set_yticklabels(labels)
 
     #"""
     # ---------------- ur vs Stellar Mass; color = conc -----------------
     ax2 = fig.add_subplot(312)
     ax2.set_xlim(10.,12.)
-    ax2.set_ylim(0.,4.5)
+    ax2.set_ylim(1.,4.)
     ax2.set_xlabel('log[Stellar Mass]')
     ax2.set_ylabel('u - r')
 
@@ -431,7 +432,7 @@ def plot_GAMAfig2(data):
     scatter = ax2.scatter(mass[good], ur[good], c=color[good], marker='.', 
                           edgecolor='')
     ax2.contour(xi.T, yi.T, z2.T, levels, colors='k', linewidths=1.3)
-    ax2.axhline(y=2.2, color='k', ls='--', lw=2)
+    ax2.axhline(y=2.2, color='k', ls='--')
 
     ticks = np.arange(1., 4.,.5)/np.max(conc)
     labels = [format(t*np.max(conc), '.1f') for t in ticks]
@@ -442,9 +443,10 @@ def plot_GAMAfig2(data):
     #----------------- gi vs Stellar Mass; color = conc ------------------
     ax3 = fig.add_subplot(313)
     ax3.set_xlim(10.,12.)
-    ax3.set_ylim(0.,1.5)
+    #ax3.set_ylim(0.2,1.4)
+    ax3.set_ylim(.5,2.)
     ax3.set_xlabel('log[Stellar Mass]')
-    ax3.set_ylabel('g - r')
+    ax3.set_ylabel('g - i')
 
     xi, yi = np.mgrid[10.:12.5:60j, 0.:1.5:60j]
     k3 = kde.gaussian_kde(np.vstack([mass, gi]))
@@ -455,7 +457,7 @@ def plot_GAMAfig2(data):
     scatter = ax3.scatter(mass[good], gi[good], c=color[good], marker='.', 
                           edgecolor='')
     ax3.contour(xi.T, yi.T, z3.T, levels, colors='k', linewidths=1.3)
-    ax3.axhline(y=.7, color='k', ls='--', lw=2)
+    ax3.axhline(y=.7, color='k', ls='--')
 
     ticks = np.arange(1., 4.,.5)/np.max(conc)
     labels = [format(t*np.max(conc), '.1f') for t in ticks]
@@ -465,7 +467,7 @@ def plot_GAMAfig2(data):
     #"""
 
     plt.tight_layout()
-    plt.savefig('3D_morph.png')
+    plt.savefig('3D_morph_gi.png')
     plt.show()
     plt.close()
 
@@ -474,31 +476,32 @@ def plot_GAMAfig4(data):
     gi = data['PETROMAG_G']-data['PETROMAG_R']
     conc = data['PETROR90_R']/data['PETROR50_R']
 
-    fig = plt.figure(figsize=(10,15))
+    fig = plt.figure(figsize=(17,6.5))
 
-    ax1 = fig.add_subplot(311)
+    ax1 = fig.add_subplot(131)
     bins = np.arange(np.min(conc), np.max(conc)+0.05, 0.05)
-    ax1.hist(conc, normed=True, bins=bins, range=(0.,5.), histtype='step', lw=2)
-    ax1.axvline(x=2.65, color='k', lw=2)
+    ax1.hist(conc, normed=True, bins=bins, range=(0.,5.), histtype='step', lw=3)
+    ax1.axvline(x=2.65, color='k', lw=3)
     ax1.set_xlim(1.5, 3.75)
-    ax1.set_xlabel('CI')
+    ax1.set_xlabel('CI', weight=525)
 
-    ax2 = fig.add_subplot(312)
+    ax2 = fig.add_subplot(132)
     bins = np.arange(np.min(ur), np.max(ur)+0.05, 0.05)
-    ax2.hist(ur, normed=True, bins=bins, range=(0., 5.), histtype='step', lw=2)
-    ax2.axvline(x=2.2, color='k', lw=2)
+    ax2.hist(ur, normed=True, bins=bins, range=(0., 5.), histtype='step', lw=3)
+    ax2.axvline(x=2.2, color='k', lw=3)
     ax2.set_xlim(1.2,3.5)
     ax2.set_xlabel('u - r')
 
-    ax3 = fig.add_subplot(313)
+    ax3 = fig.add_subplot(133)
     bins = np.arange(np.min(gi), np.max(gi)+0.02, 0.02)
-    ax3.hist(gi, normed=True, bins=bins, range=(0., 2.), histtype='step', lw=2)
-    ax3.axvline(x=0.7, color='k', lw=2)
+    ax3.hist(gi, normed=True, bins=bins, range=(0., 2.), histtype='step', lw=3)
+    ax3.axvline(x=0.7, color='k', lw=3)
     ax3.set_xlim(0.3,1.1)
+    #ax3.set_xlim(0.3, 1.1)
     ax3.set_xlabel('g - r')
 
     plt.tight_layout()
-    plt.savefig('morph_cuts.png')
+    plt.savefig('morph_cuts_poster.png')
     plt.show()
     plt.close()
 
@@ -521,7 +524,7 @@ def plot_stuff_GZclasses(data):
 
     levels = [ .5, .75, .99]
 
-    fig = plt.figure(figsize=(8,15))
+    fig = plt.figure(figsize=(7.5,15))
 
     ax1 = fig.add_subplot(311)
     ax1.set_xlim(1.,4.5)
@@ -547,11 +550,11 @@ def plot_stuff_GZclasses(data):
     #scatter = ax1.scatter(conc[random_sample], mass[random_sample], 
     #                      c=color[random_sample], marker='.',
     #                      edgecolor='', alpha=0.5)
-    ax1.axvline(x=2.65, color='k', lw=2, ls='--')
+    ax1.axvline(x=2.65, color='k', ls='--')
 
 
-    ax1.text(1.1, 11.7, 'Smooth', color='red', size=16) 
-    ax1.text(1.1, 11.5, 'Featured', color='blue', size=16)
+    ax1.text(1.1, 11.7, 'Smooth', color='red', size=18, weight=500) 
+    ax1.text(1.1, 11.5, 'Featured', color='blue', size=18, weight=500)
     #red = mpatches.Patch(color='red', label='Smooth')
     #blue = mpatches.Patch(color='blue', label='Featured')
     #plt.legend(handles=[red, blue])
@@ -560,7 +563,7 @@ def plot_stuff_GZclasses(data):
     # ---------------- ur vs Stellar Mass; color = conc -----------------
     ax2 = fig.add_subplot(312)
     ax2.set_xlim(10., 12.)
-    ax2.set_ylim(0.,4.5)
+    ax2.set_ylim(1.,4.)
     ax2.set_xlabel('log[Stellar Mass]')
     ax2.set_ylabel('u - r')
 
@@ -577,13 +580,13 @@ def plot_stuff_GZclasses(data):
     ax2.contour(xi.T, yi.T, z2e.T, levels=levels, colors='r', linewidths=1.3)
     #scatter = ax2.scatter(mass[random_sample], ur[random_sample], 
     #                      c=color[random_sample], marker='.', edgecolor='')
-    ax2.axhline(y=2.2, color='k', lw=2, ls='--')
+    ax2.axhline(y=2.2, color='k', ls='--')
 
 
     #----------------- gi vs Stellar Mass; color = conc ------------------
     ax3 = fig.add_subplot(313)
     ax3.set_xlim(10.,12.)
-    ax3.set_ylim(0.,1.5)
+    ax3.set_ylim(0.2,1.4)
     ax3.set_xlabel('log[Stellar Mass]')
     ax3.set_ylabel('g - r')
 
@@ -600,7 +603,7 @@ def plot_stuff_GZclasses(data):
     ax3.contour(xi.T, yi.T, z3e.T, levels=levels, colors='r', linewidths=1.3)
     #scatter = ax3.scatter(mass[random_sample], gi[random_sample], 
     #                      c=color[random_sample], marker='.', edgecolor='')
-    ax3.axhline(y=.7, color='k', lw=2, ls='--')
+    ax3.axhline(y=.7, color='k', ls='--')
     
     plt.tight_layout()
     plt.savefig('visual_morph_contours.png')
@@ -616,13 +619,19 @@ data = Table.read('zoo2MainSpecz_Ancillary_Masses_cut2.fits')
 #data_cuts = apply_cuts(data)
 
 # Data from above after cuts made and matched to my morphologies
-data_morph = Table.read('zoo2MainSpecz_Ancillary_Masses_cut2_morph.fits')
+#data_morph = Table.read('zoo2MainSpecz_Ancillary_Masses_cut2_morph.fits')
+#data = data[data['MODE']>0.]
 
-plot_stuff_GZclasses(data)
+#basic_properties(data, filename='poster')
+#mass_mag_redshift(data, filename="poster")
+#plot_stuff_GZclasses(data)
 #plot_GAMAfig2(data)
-#plot_GAMAfig4(data)
+plot_GAMAfig4(data)
 
-pdb.set_trace()
+
+
+exit()
+
 
 #full_c = data['PETROR90_R']/data['PETROR50_R']
 work_c = data_morph['PETROR90_R']/data_morph['PETROR50_R']

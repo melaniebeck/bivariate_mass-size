@@ -62,6 +62,15 @@ def co_vol(z):
     at redshift z in units of 'Mpc^3'.
     """
     return cd.diff_comoving_volume(z,**cosmo)
+
+def power_law(mass, params):
+    """
+    From Shen 2003
+    <R> = R_0*(M/M_sun)^beta
+    mass should be in units of M_sun?
+    """
+    [R_0, beta] = params
+    return R_0*(mass)**beta
     
 def calc_R_bar(M,beta,R_0):
     """
@@ -76,8 +85,8 @@ def calc_R_bar(M,beta,R_0):
     where R_0 and beta are fitting parameters;
     M_0 is arbitrarily choosen (as in Shen2003) to be 10.6
     """
-
-    return beta*(M - pivot) + math.log10(R_0)
+    #return beta*(M - pivot) + math.log10(R_0)# + pivot
+    return beta*M + math.log10(R_0)
 
 def exp_o3(ha,power,ratio):
     """
